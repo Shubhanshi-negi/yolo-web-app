@@ -1,50 +1,53 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOLO Hackathon</title>
-<style>
-body{text-align:center;}
-video,img{border:2px solid black;}
-</style>
+<title>YOLO Live Detection</title>
 </head>
+
 <body>
+<h2>YOLO Live Detection (Browser Camera)</h2>
 
-<h2>YOLO Live Detection (Server)</h2>
-
-<video id="video" width="480" autoplay></video>
+<video id="video" width="600" autoplay></video>
 <br><br>
-<img id="result" width="480"/>
+<img id="output" width="600">
 
 <script>
+const video = document.getElementById("video");
+const output = document.getElementById("output");
+
 navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    document.getElementById("video").srcObject = stream;
-});
+.then(stream => video.srcObject = stream);
 
 setInterval(() => {
-    let video = document.getElementById("video");
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-
+    const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
     ctx.drawImage(video, 0, 0);
 
-    let data = canvas.toDataURL("image/jpeg");
+    const image = canvas.toDataURL("image/jpeg");
 
     fetch("/detect", {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({image: data})
+        body: JSON.stringify({ image }),
+        headers: { "Content-Type": "application/json" }
     })
     .then(res => res.json())
-    .then(res => {
-        if(res.image){
-            document.getElementById("result").src =
-            "data:image/jpeg;base64," + res.image;
+    .then(data => {
+        output.src = "data:image/jpeg;base64," + data.image;
+
+        if(data.objects.length > 0){
+            speak(data.objects.join(", "));
         }
     });
-}, 1500);
+
+}, 1200);
+
+function speak(text){
+    let msg = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(msg);
+}
 </script>
 
 </body>
