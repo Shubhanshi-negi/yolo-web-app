@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOLO Live Detection</title>
+<title>YOLO Hackathon</title>
 </head>
 
 <body>
-<h2>YOLO Live Detection (Browser Camera)</h2>
+
+<h2>YOLO Live Detection (Online Server)</h2>
 
 <video id="video" width="600" autoplay></video>
 <br><br>
@@ -18,7 +19,12 @@ const output = document.getElementById("output");
 navigator.mediaDevices.getUserMedia({ video: true })
 .then(stream => video.srcObject = stream);
 
+let lastSpoken = "";
+
 setInterval(() => {
+
+    if(video.videoWidth === 0) return;
+
     const canvas = document.createElement("canvas");
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -35,18 +41,29 @@ setInterval(() => {
     })
     .then(res => res.json())
     .then(data => {
-        output.src = "data:image/jpeg;base64," + data.image;
 
-        if(data.objects.length > 0){
-            speak(data.objects.join(", "));
+        if(data.image){
+            output.src = "data:image/jpeg;base64," + data.image;
         }
+
+        if(data.objects && data.objects.length > 0){
+            let text = data.objects.join(", ");
+            speak(text);
+        }
+
     });
 
-}, 1200);
+}, 1500);
 
 function speak(text){
+    if(text === lastSpoken) return;
+
+    window.speechSynthesis.cancel();
+
     let msg = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(msg);
+
+    lastSpoken = text;
 }
 </script>
 
