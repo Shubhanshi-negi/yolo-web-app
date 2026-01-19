@@ -5,6 +5,7 @@ from ultralytics import YOLO
 from PIL import Image
 import io
 import os
+import cv2   # ✅ MISSING IMPORT FIXED
 
 app = Flask(__name__)
 model = YOLO("yolov8n.pt")
@@ -15,19 +16,32 @@ def index():
 
 @app.route('/detect', methods=['POST'])
 def detect():
-    data = request.json['image']
-    img_data = base64.b64decode(data.split(',')[1])
+    try:
+        data = request.json.get('image')
 
-    img = Image.open(io.BytesIO(img_data))
-    frame = np.array(img)
+        if not data:
+            return jsonify({"error": "No image received"}), 400
 
-    results = model(frame)
+        # Decode base64
+        img_data = base64.b64decode(data.split(',')[1])
 
-    annotated = results[0].plot()
-    _, buffer = cv2.imencode('.jpg', annotated)
-    img_str = base64.b64encode(buffer).decode('utf-8')
+        # Open image safely
+        img = Image.open(io.BytesIO(img_data)).convert("RGB")
+        frame = np.array(img)
 
-    return jsonify({"image": img_str})
+        # YOLO detection
+        results = model(frame)
+        annotated = results[0].plot()
+
+        # Encode back
+        _, buffer = cv2.imencode('.jpg', annotated)
+        img_str = base64.b64encode(buffer).decode('utf-8')
+
+        return jsonify({"image": img_str})
+
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
