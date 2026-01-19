@@ -1,47 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOLO Browser Detection</title>
+<title>YOLO LIVE</title>
 </head>
 <body>
 
-<h2>Live Detection (Browser Camera)</h2>
+<h2>YOLO Live Detection</h2>
 
-<video id="video" width="400" autoplay></video>
-<br><br>
-<img id="result" width="400"/>
-
-<script>
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-    document.getElementById("video").srcObject = stream;
-});
-
-setInterval(() => {
-    let video = document.getElementById("video");
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.drawImage(video, 0, 0);
-
-    let data = canvas.toDataURL("image/jpeg");
-
-    fetch("/detect", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({image: data})
-    })
-    .then(res => res.json())
-    .then(res => {
-        if(res.image){
-            document.getElementById("result").src =
-            "data:image/jpeg;base64," + res.image;
-        }
-    });
-}, 2000);  // ⬅ slower (server needs time)
-</script>
+<img src="{{ url_for('video') }}" width="600">
 
 </body>
 </html>
