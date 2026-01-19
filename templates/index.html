@@ -8,8 +8,8 @@
 <h2>Live Detection (Browser Camera)</h2>
 
 <video id="video" width="400" autoplay></video>
-<canvas id="canvas" hidden></canvas>
-<img id="result"/>
+<br><br>
+<img id="result" width="400"/>
 
 <script>
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -19,7 +19,7 @@ navigator.mediaDevices.getUserMedia({ video: true })
 
 setInterval(() => {
     let video = document.getElementById("video");
-    let canvas = document.getElementById("canvas");
+    let canvas = document.createElement("canvas");
     let ctx = canvas.getContext("2d");
 
     canvas.width = video.videoWidth;
@@ -35,12 +35,13 @@ setInterval(() => {
     })
     .then(res => res.json())
     .then(res => {
-        document.getElementById("result").src =
-        "data:image/jpeg;base64," + res.image;
+        if(res.image){
+            document.getElementById("result").src =
+            "data:image/jpeg;base64," + res.image;
+        }
     });
-}, 1000);
+}, 2000);  // ⬅ slower (server needs time)
 </script>
 
 </body>
 </html>
-
