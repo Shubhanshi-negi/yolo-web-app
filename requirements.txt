@@ -1,0 +1,13 @@
+# Core dependencies
+ultralytics>=8.0.230
+opencv-python>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+
+# Optional but recommended for audio feedback
+pyttsx3>=2.90
+
+# For better performance (optional)
+torch>=2.0.0
+torchvision>=0.15.0
+
