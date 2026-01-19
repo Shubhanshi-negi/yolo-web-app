@@ -1,13 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOLO LIVE</title>
+<title>YOLO Hackathon Demo</title>
+<style>
+video, img{
+    border:2px solid black;
+}
+</style>
 </head>
 <body>
 
-<h2>YOLO Live Detection</h2>
+<h2>YOLO Live Detection (Server)</h2>
 
-<img src="{{ url_for('video') }}" width="600">
+<video id="video" width="500" autoplay></video>
+<br><br>
+<img id="result" width="500"/>
+
+<script>
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+    document.getElementById("video").srcObject = stream;
+});
+
+setInterval(() => {
+    let video = document.getElementById("video");
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+
+    let data = canvas.toDataURL("image/jpeg");
+
+    fetch("/detect", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({image: data})
+    })
+    .then(res => res.json())
+    .then(res => {
+        if(res.image){
+            document.getElementById("result").src =
+            "data:image/jpeg;base64," + res.image;
+        }
+    });
+}, 1000);  // 1 frame per second (server safe)
+</script>
 
 </body>
 </html>
