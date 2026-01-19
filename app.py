@@ -1,10 +1,8 @@
 from flask import Flask, render_template, request, jsonify
 import base64
 import numpy as np
-from ultralytics import YOLO
-from PIL import Image
-import io
 import cv2
+from ultralytics import YOLO
 import os
 
 app = Flask(__name__)
@@ -16,27 +14,23 @@ def index():
 
 @app.route('/detect', methods=['POST'])
 def detect():
-    try:
-        data = request.json.get('image')
-        if not data:
-            return jsonify({"error": "No image"}), 400
+    data = request.json['image']
 
-        img_data = base64.b64decode(data.split(',')[1])
-        img = Image.open(io.BytesIO(img_data)).convert("RGB")
-        frame = np.array(img)
+    # decode base64
+    encoded = data.split(",")[1]
+    img_bytes = base64.b64decode(encoded)
 
-        results = model(frame)
-        annotated = results[0].plot()
+    # convert to numpy
+    np_arr = np.frombuffer(img_bytes, np.uint8)
+    img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
 
-        _, buffer = cv2.imencode('.jpg', annotated)
-        img_str = base64.b64encode(buffer).decode('utf-8')
+    results = model(img, conf=0.45)
+    img = results[0].plot()
 
-        return jsonify({"image": img_str})
+    _, buffer = cv2.imencode(".jpg", img)
+    img_str = base64.b64encode(buffer).decode()
 
-    except Exception as e:
-        print("ERROR:", e)
-        return jsonify({"error": str(e)}), 500
-
+    return jsonify({"image": img_str})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
