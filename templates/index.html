@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOLO Hackathon Demo</title>
+<title>YOLO Hackathon</title>
 <style>
-video, img{
-    border:2px solid black;
-}
+body{text-align:center;}
+video,img{border:2px solid black;}
 </style>
 </head>
 <body>
 
 <h2>YOLO Live Detection (Server)</h2>
 
-<video id="video" width="500" autoplay></video>
+<video id="video" width="480" autoplay></video>
 <br><br>
-<img id="result" width="500"/>
+<img id="result" width="480"/>
 
 <script>
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -45,7 +44,7 @@ setInterval(() => {
             "data:image/jpeg;base64," + res.image;
         }
     });
-}, 1000);  // 1 frame per second (server safe)
+}, 1500);   // slow = server safe
 </script>
 
 </body>
